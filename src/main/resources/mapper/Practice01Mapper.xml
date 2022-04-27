@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.coding404.myweb.practice01.Practice01Mapper">
+	
+	<insert id="regist">
+		insert into PRACTICE01(prac_name,
+							   prac_regdate,
+							   prac_title,
+							   prac_content)
+			   values( #{prac_name}, #{prac_regdate}, #{prac_title}, #{prac_content})
+	</insert>
+	
+	<select id="getlist" resultType="Practice01VO">
+		<!-- 
+		select * from PRACTICE01
+		order by prac_number desc
+		-->
+		<![CDATA[
+		SELECT B.*
+		FROM(
+			SELECT A.*,
+			   @ROWNUM := @ROWNUM + 1 AS RN
+		FROM(SELECT *
+			FROM PRACTICE01
+			WHERE PRAC_NAME = 'admin'
+		]]>    
+		
+		<if test="searchName != null and searchName != '' ">
+		AND PRAC_NAME LIKE CONCAT('%',#{searchName},'%')
+		</if>
+		
+		<if test="searchTitle != null and searchTitle != '' ">    
+		AND PRAC_TITLE LIKE CONCAT('%',#{searchTitle},'%')
+		</if>
+		    
+		    ORDER BY PRAC_NUMBER DESC) A, (SELECT @ROWNUM := 0) D
+		) B
+		<![CDATA[
+		WHERE RN > (#{page}-1)*#{amount}  AND RN <= #{page}*#{amount} 
+		]]>
+		
+	</select>
+	
+	<select id="getTotal" resultType="int">
+		select count(*) as total from PRACTICE01
+		WHERE PRAC_NAME = 'admin'
+		<if test="searchName != null and searchName != '' ">
+		AND PRAC_NAME LIKE CONCAT('%',#{searchName},'%')
+		</if>
+		
+		<if test="searchTitle != null and searchTitle != '' ">    
+		AND PRAC_TITLE LIKE CONCAT('%',#{searchTitle},'%')
+		</if>
+		
+	</select>
+	
+	<select id="getdetail" resultType="Practice01VO">
+		select * from PRACTICE01
+		where prac_number = #{prac_number}
+	</select>
+	
+	<update id="update">
+		update PRACTICE01 
+		set prac_name = #{prac_name},
+			prac_regdate = #{prac_regdate},
+			prac_title = #{prac_title},
+			prac_content = #{prac_content}
+		where prac_number = #{prac_number}
+	</update>
+	
+	<delete id="delete">
+		delete from PRACTICE01
+		where prac_number = #{prac_number}
+	</delete>
+	
+	<select id="getMelist" resultType="Practice01VO">
+		select * from PRACTICE01
+		where prac_name = 'admin'
+		order by prac_number desc
+	</select>
+	
+
+</mapper>

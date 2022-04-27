@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.coding404.myweb.test.TestMapper">
+
+<insert id="testregist">
+	insert into test(
+					test_enddate,
+					test_writer,
+					test_price,
+					test_count,
+					test_discount,
+					test_prod_purchase_yn,
+					test_content,
+					test_comment,
+					test_name,
+					category_key
+					) 
+				values(
+				#{test_enddate},
+				#{test_writer},
+				#{test_price},
+				#{test_count},
+				#{test_discount},
+				#{test_prod_purchase_yn},
+				#{test_content},
+				#{test_comment},
+				#{test_name},
+				#{category_key})
+				
+</insert>
+
+<select id="getList" resultType="TestVO">
+	<![CDATA[
+	SELECT *
+	FROM(
+	SELECT A.*,
+			@ROWNUM := @ROWNUM + 1 AS RN
+	FROM (SELECT * 
+	FROM TEST
+	WHERE TEST_WRITER = 'admin'
+	]]>
+	
+	<if test="searchname != null and searchname != '' ">
+	AND TEST_NAME LIKE CONCAT('%', #{searchname}, '%')			
+	</if>
+	
+	<if test="searchcontent !=null and searchcontent != '' ">
+	AND  TEST_CONTENT LIKE CONCAT('%',#{searchcontent} ,'%')
+	</if>
+	
+	
+	ORDER BY 
+	<if test="order == 'asc' ">
+	TEST_PRICE ASC,
+	</if>
+	<if test="order == 'desc' ">
+	TEST_PRICE DESC,
+	</if>
+	TEST_ID DESC) A , (SELECT @ROWNUM := 0) D
+	) B
+	LEFT OUTER JOIN (
+	SELECT CONCAT(A1.GROUP_ID , A1.CATEGORY_ID) AS CATEGORY_KEY,
+    CASE A1.CATEGORY_PARENT_LV WHEN 0 THEN A1.CATEGORY_DETAIL_NM
+							   WHEN 1 THEN CONCAT(A2.CATEGORY_DETAIL_NM, '>' ,A1.CATEGORY_DETAIL_NM)
+                               WHEN 2 THEN CONCAT(A3.CATEGORY_DETAIL_NM, '>' ,A2.CATEGORY_DETAIL_NM, '>' ,A1.CATEGORY_DETAIL_NM)
+		END AS CATEGORY_NAV
+	FROM TEST_CATEGORY A1
+    LEFT OUTER JOIN TEST_CATEGORY A2
+    ON A1.CATEGORY_LV = A2.CATEGORY_PARENT_LV AND A1.CATEGORY_DETAIL_LV = A2.CATEGORY_DETAIL_PARENT_LV AND A1.GROUP_ID = A2.GROUP_ID
+    LEFT OUTER JOIN TEST_CATEGORY A3
+    ON A2.CATEGORY_LV = A3.CATEGORY_PARENT_LV AND A2.CATEGORY_DETAIL_LV = A3.CATEGORY_DETAIL_PARENT_LV 
+) C
+ON B.CATEGORY_KEY = C.CATEGORY_KEY
+	
+	
+	<![CDATA[
+	WHERE RN > (#{pageNum}-1)*#{amount} AND RN <= #{pageNum}*#{amount}
+	]]>
+</select>
+
+<select id="getDetail" resultType="TestVO">
+	select * from test
+	where test_id = #{test_id}
+</select>
+
+<select id="getTotal" resultType="int">
+	select count(*) from test
+	WHERE TEST_WRITER = 'admin'
+	<if test="searchname != null and searchname != '' ">
+	AND TEST_NAME LIKE CONCAT('%', #{searchname}, '%')			
+	</if>
+	<if test="searchcontent !=null and searchcontent != '' ">
+	AND  TEST_CONTENT LIKE CONCAT('%',#{searchcontent} ,'%')
+	</if>
+
+</select>
+
+<select id="getCategory" resultType="TestCategoryVO">
+SELECT * FROM TEST_CATEGORY
+WHERE CATEGORY_LV = 1 
+</select>
+
+<select id="getCategoryChild" resultType="TestCategoryVO">
+SELECT * 
+FROM TEST_CATEGORY
+WHERE GROUP_ID = #{group_id}
+AND CATEGORY_PARENT_LV = #{category_lv}
+AND CATEGORY_DETAIL_PARENT_LV = #{category_detail_lv}
+</select>
+
+<insert id="registFile" >
+
+	<selectKey resultType="int" order="BEFORE" keyProperty="test_id">
+		select max(test_id) as test_id
+		from test
+		where test_writer = 'admin';
+	</selectKey>
+
+	insert into TEST_UPLOAD(
+			filename,
+			filepath,
+			uuid,
+			test_id,
+			test_writer
+			
+	) VALUES(
+			#{filename},
+			#{filepath},
+			#{uuid},
+			#{test_id},
+			#{test_writer}
+	)
+
+</insert>
+
+<select id="getImg" resultType="TestUploadVO">
+	SELECT * 
+FROM TEST_UPLOAD
+WHERE TEST_ID = #{test_id}
+</select>
+
+</mapper>
+

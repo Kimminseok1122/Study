@@ -1,0 +1,176 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org"><!-- 타임리프문법 선언 -->
+
+	<th:block th:replace="~{/include/practice01Layout :: setContent( ~{ :: .wrap} )}">
+	
+	<div class="wrap">
+		<div class="warp_inner">
+
+			<!-- left_menu end -->
+			<div class="right_content">
+				
+				<div class="midiaq">
+					<div class="mainWrapper"> 
+						<div class="ipssGiudeBlock" style="color:red; font-size: large;">
+							-요구사항<br>
+							-내가 작성한 글만 볼 수 있습니다. (where id = 'admin')<br>
+							-수정/삭제 클릭시 수정/삭제 화면으로 넘어갑니다<br>
+						</div>
+					</div>
+
+					<form name="prac_topicListMe" action="############" method="post" >
+
+					<div class="full_collum collum">
+						<ul>
+							<li class="collum_tit">
+								<h2>내글 목록</h2>
+								<input type="hidden" name="page" th:value="1" >
+								<input type="hidden" name="amount" th:value="${pageVO.amount}">
+								<select class="" th:onchange="prac_handler(this)">
+									<option value="10" th:selected="${pageVO.amount} == 10 ? 'selected' ">10개 보기</option>
+									<option value="20" th:selected="${pageVO.amount} == 20 ? 'selected' ">20개 보기</option>
+									<option value="40" th:selected="${pageVO.amount} == 40 ? 'selected' ">40개 보기</option>
+									<option value="80" th:selected="${pageVO.amount} == 80 ? 'selected' ">80개 보기</option>
+								</select>
+								<span class="showtoggle minus"></span>
+								<ul>
+									<li>
+										<table cellpadding="0" cellspacing="0" class="row_tb_7" width="100%;">
+											<tr>
+												<th>순서</th>
+												<th>아이디</th>
+												<th>제목</th>
+												<th>내용</th>
+												<th>등록일</th>
+												<th>수정/삭제</th>
+												
+											</tr>
+												
+											<tr th:each="vo,state : ${list}">
+	
+												<td>[[${state.index}+1]]</td>
+												<td>[[${vo.prac_name}]]</td>
+												<td>[[${vo.prac_title}]]</td>
+												<td>
+													[[${vo.prac_content}]]
+												</td>
+												<td>[[${vo.prac_regdate}]]</td>
+												<td>
+                                                <th:block>
+                                                	<input type="hidden" name="prac_number"  id="prac_number">
+
+                                                    <a th:href="@{수정}" th:onclick="|prac_modify(this)|" th:id=${vo.prac_number}>수정</a>
+                                                    /
+                                                    <a th:href="@{삭제}" th:onclick="|prac_delete(this)|" th:id=${vo.prac_number}>삭제</a>
+                                                </th:block>
+                                                </td>
+											</tr>
+
+
+
+										</table>
+
+
+										<div class="page">
+											<ul>
+											
+												<th:block th:if="${pageVO.prev}">
+												
+												<li>
+													<a th:href="@{/practice01/topicListMe(page = 1,
+																						 amount = ${pageVO.amount} ) }">
+														<i class="fa fa-angle-double-left" aria-hidden="true"></i>
+													</a>
+												</li>
+												
+												</th:block>
+												
+												<th:block th:if="${pageVO.prev}">
+												
+												<li style="margin-right:5px;">
+													<a th:href="@{/practice01/topicListMe(page = ${pageVO.start - 1 },
+																					  amount = ${pageVO.amount} ) }">
+														<i class="fa fa-angle-left" aria-hidden="true"></i>
+													</a>
+												</li>
+												
+												</th:block>
+												
+												<th:block th:each="page : ${pageVO.pageList}">
+												
+												<li th:class="${pageVO.page == page ? 'on' : '' } ">
+													<a th:href="@{/practice01/topicListMe(page = ${page},
+																						  amount = ${pageVO.amount} ) }">[[${page}]]</a>
+												</li>
+
+												</th:block>
+												
+												<th:block th:if="${pageVO.next}">
+												
+												<li style="margin-left:5px;">
+													<a th:href="@{/practice01/topicListMe(page=${pageVO.end + 1},
+																						  amount=${pageVO.amount} ) }">
+														<i class="fa fa-angle-right" aria-hidden="true"></i>
+													</a>
+												</li>
+												
+												</th:block>
+												
+												<th:block th:if="${pageVO.next}">
+												
+												<li>
+													<a th:href="@{/practice01/topicListMe(page=${pageVO.realEnd},
+																						 amount=${pageVO.amount} ) }">
+														<i class="fa fa-angle-double-right" aria-hidden="true"></i>
+													</a>
+												</li>
+												
+												</th:block>
+												
+											</ul>
+										</div>
+									</li>
+
+								</ul>
+							</li>
+						</ul>
+					</div>
+					</form>
+
+				</div>
+			</div>
+		</div>
+
+		
+	
+	</th:block>
+	
+	<script th:inline="javascript">
+		function prac_modify(x){
+			this.event.preventDefault();
+			document.prac_topicListMe.action='topicModify';
+			document.getElementById("prac_number").value = x.id;
+			document.prac_topicListMe.submit();
+			
+		}
+		
+		function prac_delete(x){
+			this.event.preventDefault();
+			if(confirm("삭제후에는 복구가 불가능합니다 삭제하시겠습니까?")){
+				document.prac_topicListMe.action="prac_delete";
+				document.getElementById("prac_number").value = x.id;
+				document.prac_topicListMe.submit();				
+			}
+		}
+		
+		function prac_handler(x){
+			
+			document.prac_topicListMe.page.value = 1;
+			document.prac_topicListMe.amount.value = x.value
+			document.prac_topicListMe.method = 'get';
+			document.prac_topicListMe.submit();
+		}
+	</script>
+
+
+</html>

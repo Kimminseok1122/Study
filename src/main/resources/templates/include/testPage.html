@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"><!-- 타임리프문법 선언 -->
+
+<th:block th:fragment="testpage( pagecourse, pageVO )">
+
+									<ul>
+												<th:block th:if = "${pageVO.prev}">
+												<li>
+													<a th:href="@{${pagecourse}(pageNum=1, 
+																					amount=${pageVO.amount},
+																					searchname=${pageVO.cri.searchname},
+																					searchcontent=${pageVO.cri.searchcontent},
+																					order=${pageVO.cri.order} ) }">
+														<i class="fa fa-angle-double-left" aria-hidden="true"></i>
+													</a>
+												</li>
+												</th:block>
+												
+												<th:block th:if = "${pageVO.prev}">
+												<li style="margin-right:5px;">
+													<a th:href="@{${pagecourse}(pageNum=${pageVO.start-10}, 
+																					amount=${pageVO.amount},
+																					searchname=${pageVO.cri.searchname},
+																					searchcontent=${pageVO.cri.searchcontent},
+																					order=${pageVO.cri.order} ) }">
+														<i class="fa fa-angle-left" aria-hidden="true"></i>
+													</a>
+												</li>
+												</th:block>
+												
+												<th:block th:each="page : ${pageVO.pageList}">
+												<li th:class="${pageVO.pagenum == page ? 'on' : ''}">
+													<a th:href="@{${pagecourse}(pageNum=${page}, 
+																					amount=${pageVO.amount},
+																					searchname=${pageVO.cri.searchname},
+																					searchcontent=${pageVO.cri.searchcontent},
+																					order=${pageVO.cri.order} ) }">[[${page}]]</a>
+												</li>
+												</th:block>
+												
+												<th:block th:if = "${pageVO.next}">
+												<li style="margin-left:5px;">
+													<a th:href="@{${pagecourse}(pageNum=${pageVO.end+1}, 
+																					amount=${pageVO.amount},
+																					searchname=${pageVO.cri.searchname},
+																					searchcontent=${pageVO.cri.searchcontent},
+																					order=${pageVO.cri.order} ) }">
+														<i class="fa fa-angle-right" aria-hidden="true"></i>
+													</a>
+												</li>
+												</th:block>
+												
+												<th:block th:if = "${pageVO.next}">
+												<li>
+													<a th:href="@{${pagecourse}(pageNum=${pageVO.realEnd}, 
+																					amount=${pageVO.amount},
+																					searchname=${pageVO.cri.searchname},
+																					searchcontent=${pageVO.cri.searchcontent},
+																					order=${pageVO.cri.order} ) }">
+														<i class="fa fa-angle-double-right" aria-hidden="true"></i>
+													</a>
+												</li>
+												</th:block>
+												
+											</ul>	
+
+</th:block>
+
+</html>
